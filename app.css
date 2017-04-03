@@ -1,0 +1,85 @@
+/*@import url('https://fonts.googleapis.com/css?family=Montserrat');*/
+
+body {
+  background: url('https://source.unsplash.com/random') #cccccc;
+  /*background: #d24d57;*/
+  background-size: cover;
+  font-family: 'Roboto' !important;
+  z-index: -1;
+}
+
+.mdl-grid {
+  margin-top: 5%;
+}
+
+.mdl-card {
+  width: 100%;
+  z-index: 1;
+}
+
+.timer-media {
+  width: 100%;
+  padding: 1em 1em 2em 1em;
+  background: none;
+  font-weight: 300;
+}
+
+.timer {
+  font-size: 64px;
+  height: 100%;
+}
+
+.tart-over-button {
+  /*position: relative;*/
+  /*bottom: -20px;*/
+  /*z-index: 10;*/
+  transform: translate(0px, 28px);
+  z-index: 999 !important;
+}
+
+.mdl-button--floating-action {
+  position: absolute;
+  bottom: -65px;
+  margin-bottom: 100px;
+  padding-top: 24px;
+  right: 24px;
+  z-index: 998;
+}
+
+.menu-stopped {
+  position: relative;
+}
+
+.menu-running {
+  position: relative;
+}
+
+.fab-toolbar {
+  position: absolute;
+  float: right;
+  top: -35px;
+  right: 1em;
+  z-index: 100;
+}
+
+.mdl-card, .mdl-card__supporting-text {
+  overflow: inherit;
+}
+
+/*
+ * Settings card
+ */
+.settings-card .mdl-card__title {
+  height: 150px;
+}
+
+.settings-card .mdl-textfield {
+  width: 100%;
+
+}
+
+.card-menu {
+  position: absolute;
+  left: 0;
+  top: 1em;
+}

@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Countdown timer">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <title>
+        Final Countdown
+    </title>
+    <link rel="stylesheet" href="lib/mdl/material.min.css">
+    <link rel="stylesheet" href="lib/mdl/material-icons.css">
+    <link rel="stylesheet" href="app.css">
+</head>
+
+<body>
+<div class="mdl-layout mdl-js-layout">
+    <header class="mdl-layout__header mdl-layout__header--transparent">
+        <div class="mdl-layout__header-row">
+            <!-- Title -->
+            <span class="mdl-layout-title">
+                    Final Countdown
+                </span>
+            <!-- Add spacer, to align navigation to the right -->
+            <div class="mdl-layout-spacer"></div>
+            <!-- Navigation -->
+            <!--
+            <nav class="mdl-navigation">
+                <a class="mdl-navigation__link" href="">Link</a>
+            </nav>
+            -->
+        </div>
+    </header>
+    <!--<div class="mdl-layout__drawer">-->
+    <!--<span class="mdl-layout-title">-->
+    <!--Timer-->
+    <!--</span>-->
+    <!--<nav class="mdl-navigation">-->
+    <!--<a class="mdl-navigation__link" href="">About</a>-->
+    <!--</nav>-->
+    <!--</div>-->
+    <main class="mdl-layout__content">
+    </main>
+</div>
+
+
+<div class="mdl-layout" id="app">
+
+    <main class="mdl-layout__content">
+
+        <div class="mdl-grid">
+
+            <div class="mdl-cell mdl-cell--4-col mdl-cell--4-offset">
+
+                <settings-card v-if="activeView==='settings'" :settings="settings"
+                    @back="exitSettings"
+                >
+                </settings-card>
+
+                <timer-card v-if="activeView==='timer'" :remaining-seconds="remainingSeconds" :fortune="randomFortune"
+                            :session-minutes="settings.sessionMinutes" @start-timer="startTimer"
+                            @start-short-break="startShortBreak" @start-long-break="startLongBreak"
+                            @stop-timer="stopTimer"
+                            @show-about="showAbout"
+                            @show-settings="showSettings"
+                            :settings="settings"
+                >
+                </timer-card>
+
+            </div>
+
+    </main>
+</div>
+
+<script id="timerCardTemplate" type="x-template">
+    <div class="mdl-card mdl-shadow--4dp">
+
+        <div class="mdl-card__title">
+            <h2 class="mdl-card__title-text">
+                <i class="material-icons mdl-color-text--grey-600">alarm</i>
+            </h2>
+        </div>
+
+        <div class="mdl-card__media timer-media">
+            <div v-if="!isTimerRunning" class="timer mdl-color-text--grey-600">
+                {{ sessionMinutes * 60|humanizeSeconds }}
+            </div>
+            <div v-if="isTimerRunning" class="timer">
+                {{ remainingSeconds|humanizeSeconds }}
+            </div>
+        </div>
+
+        <div class="mdl-card__supporting-text">
+            {{ fortune }}
+        </div>
+
+        <div class="mdl-card__actions mdl-card--border">
+            <div class="menu-running" v-if="isTimerRunning">
+                <!--
+                <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" v-on:click="stopTimer">
+                    <i class="material-icons">stop</i>
+                    Stop timer
+                </a>
+                -->
+                <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" v-on:click="restartTimer">
+                    <i class="material-icons">fast_rewind</i>
+                    Restart timer
+                </a>
+                <div class="fab-toolbar">
+                    <button class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored"
+                            v-on:click="stopTimer">
+                        <i class="material-icons">stop</i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="menu-stopped" v-if="!isTimerRunning">
+                <!--
+                <button class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" v-on:click="startTimer">
+                    <i class="material-icons">play_arrow</i>
+                    Start timer
+                </button>
+                -->
+                <button class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
+                        v-on:click="startShortBreak">
+                    Short break
+                </button>
+                <button class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
+                        v-on:click="startLongBreak">
+                    Long break
+                </button>
+                <div class="fab-toolbar">
+                    <button class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored"
+                            v-on:click="startTimer">
+                        <i class="material-icons">play_arrow</i>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="mdl-card__menu" id="main-card-menu">
+            <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect">
+                <i class="material-icons">more_vert</i>
+            </button>
+        </div>
+
+        <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect"
+            for="main-card-menu">
+            <li class="mdl-menu__item" @click="showSettings">
+                Settings
+            </li>
+            <!-- TODO -->
+            <!--<li class="mdl-menu__item" @click="showAbout">-->
+                <!--About-->
+            <!--</li>-->
+        </ul>
+
+    </div>
+
+</script>
+
+<script id="historyCardTemplate" type="x-template">
+    <div class="mdl-card mdl-shadow--4dp">
+        <div class="mdl-card__title">
+            <div class="mdl-card__title-text">
+                History
+            </div>
+        </div>
+        <div class="mdl-card__supporting-text">
+            <table class="mdl-data-table mdl-js-data-table mdl-data-table--selectable">
+                <thead>
+                <tr>
+                    <th>
+                        When
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="record in historyRecords">
+                    <td>
+                        {{ record.timestamp }}
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</script>
+
+<script id="settingsCardTemplate" type="x-template">
+
+    <div class="settings-card mdl-card mdl-shadow--4dp">
+        <div class="mdl-card__title mdl-card--expand mdl-color--primary mdl-color-text--primary-contrast">
+            <div class="mdl-card__title-text">
+                Settings
+            </div>
+            <div class="card-menu">
+                <button @click="goBack" class="mdl-button mdl-color-text--primary-contrast">
+                    <i class="material-icons">arrow_back</i>
+                    Back
+                </button>
+            </div>
+
+        </div>
+
+        <div class="mdl-card__supporting-text">
+            <label class="" for="sessionInput">
+                Session duration (minutes)
+            </label>
+            <div class="mdl-textfield mdl-js-textfield">
+                <input v-model="settings.sessionMinutes" class="mdl-textfield__input" type="text" id="sessionInput">
+                <label class="mdl-textfield__label" for="sessionInput"></label>
+            </div>
+
+            <label class="" for="shortBreakInput">
+                Short break duration (minutes)
+            </label>
+            <div class="mdl-textfield mdl-textfield mdl-js-textfield">
+                <input v-model="settings.shortBreakMinutes" class="mdl-textfield__input" type="text"
+                       id="shortBreakInput">
+                <label class="mdl-textfield__label" for="shortBreakInput"></label>
+            </div>
+
+            <label class="" for="longBreakInput">
+                Long break duration (minutes)
+            </label>
+            <div class="mdl-textfield mdl-textfield mdl-js-textfield">
+                <input v-model="settings.longBreakMinutes" class="mdl-textfield__input" type="text"
+                       id="longBreakInput">
+                <label class="mdl-textfield__label" for="longBreakInput"></label>
+            </div>
+
+            <p>
+                <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="endSoundSwitch">
+                    <input v-model="settings.isEndSoundOn" type="checkbox" id="endSoundSwitch"
+                           class="mdl-switch__input">
+                    <span class="mdl-switch__label">Play end sound</span>
+                </label>
+            </p>
+
+            <p>
+                <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="tickSoundSwitch">
+                    <input v-model="settings.isTickSoundOn" type="checkbox" id="tickSoundSwitch"
+                           class="mdl-switch__input">
+                    <span class="mdl-switch__label">Play ticking sound</span>
+                </label>
+            </p>
+        </div>
+
+        <div class="mdl-card__actions mdl-card--border">
+            <a class="mdl-button mdl-js-button mdl-js-ripple-effect" @click="factorySettings">
+                Reset to default
+            </a>
+        </div>
+
+    </div>
+
+</script>
+
+
+<script src="lib/material.min.js"></script>
+<script src="lib/howler/howler.core.min.js"></script>
+<script src="lib/vue.js"></script>
+<script src="app.js"></script>
+</body>
+
+</html>
