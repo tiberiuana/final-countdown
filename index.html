@@ -20,7 +20,9 @@
         <div class="mdl-layout__header-row">
             <!-- Title -->
             <span class="mdl-layout-title">
+                <a href="https://tiberiuana.github.io/final-countdown">
                     Final Countdown
+                </a>
                 </span>
             <!-- Add spacer, to align navigation to the right -->
             <div class="mdl-layout-spacer"></div>
@@ -53,20 +55,23 @@
 
             <div class="mdl-cell mdl-cell--4-col mdl-cell--4-offset">
 
-                <settings-card v-if="activeView==='settings'" :settings="settings"
-                    @back="exitSettings"
-                >
-                </settings-card>
+                <settings-card
+                        v-if="activeView==='settings'"
+                        :settings="settings"
+                        @change="updateSettings"
+                        @back="exitSettings"
+                        @reset-settings="resetSettings"
+                ></settings-card>
 
-                <timer-card v-if="activeView==='timer'" :remaining-seconds="remainingSeconds" :fortune="randomFortune"
-                            :session-minutes="settings.sessionMinutes" @start-timer="startTimer"
-                            @start-short-break="startShortBreak" @start-long-break="startLongBreak"
-                            @stop-timer="stopTimer"
-                            @show-about="showAbout"
-                            @show-settings="showSettings"
-                            :settings="settings"
-                >
-                </timer-card>
+                <timer-card
+                        v-if="activeView==='timer'"
+                        :remaining-seconds="remainingSeconds" :fortune="randomFortune"
+                        :session-minutes="settings.sessionMinutes" @start-timer="startTimer"
+                        @start-short-break="startShortBreak" @start-long-break="startLongBreak"
+                        @stop-timer="stopTimer"
+                        @show-settings="showSettings"
+                        :settings="settings"
+                ></timer-card>
 
             </div>
 
@@ -116,12 +121,6 @@
             </div>
 
             <div class="menu-stopped" v-if="!isTimerRunning">
-                <!--
-                <button class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" v-on:click="startTimer">
-                    <i class="material-icons">play_arrow</i>
-                    Start timer
-                </button>
-                -->
                 <button class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
                         v-on:click="startShortBreak">
                     Short break
@@ -153,7 +152,7 @@
             </li>
             <!-- TODO -->
             <!--<li class="mdl-menu__item" @click="showAbout">-->
-                <!--About-->
+            <!--About-->
             <!--</li>-->
         </ul>
 
@@ -189,7 +188,7 @@
     </div>
 </script>
 
-<script id="settingsCardTemplate" type="x-template">
+<script id="settingsCardTemplate" type="text/x-template">
 
     <div class="settings-card mdl-card mdl-shadow--4dp">
         <div class="mdl-card__title mdl-card--expand mdl-color--primary mdl-color-text--primary-contrast">
@@ -210,7 +209,12 @@
                 Session duration (minutes)
             </label>
             <div class="mdl-textfield mdl-js-textfield">
-                <input v-model="settings.sessionMinutes" class="mdl-textfield__input" type="text" id="sessionInput">
+                <input
+                        v-model="localSettings['sessionMinutes']"
+                        class="mdl-textfield__input"
+                        type="text"
+                        id="sessionInput"
+                >
                 <label class="mdl-textfield__label" for="sessionInput"></label>
             </div>
 
@@ -218,8 +222,11 @@
                 Short break duration (minutes)
             </label>
             <div class="mdl-textfield mdl-textfield mdl-js-textfield">
-                <input v-model="settings.shortBreakMinutes" class="mdl-textfield__input" type="text"
-                       id="shortBreakInput">
+                <input
+                        v-model="localSettings['shortBreakMinutes']"
+                        class="mdl-textfield__input" type="text"
+                        id="shortBreakInput"
+                >
                 <label class="mdl-textfield__label" for="shortBreakInput"></label>
             </div>
 
@@ -227,30 +234,43 @@
                 Long break duration (minutes)
             </label>
             <div class="mdl-textfield mdl-textfield mdl-js-textfield">
-                <input v-model="settings.longBreakMinutes" class="mdl-textfield__input" type="text"
-                       id="longBreakInput">
+                <input
+                        v-model="localSettings['longBreakMinutes']"
+                        class="mdl-textfield__input" type="text"
+                        id="longBreakInput"
+                >
                 <label class="mdl-textfield__label" for="longBreakInput"></label>
             </div>
 
             <p>
                 <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="endSoundSwitch">
-                    <input v-model="settings.isEndSoundOn" type="checkbox" id="endSoundSwitch"
-                           class="mdl-switch__input">
-                    <span class="mdl-switch__label">Play end sound</span>
+                    <input
+                            v-model="localSettings['isEndSoundOn']"
+                            type="checkbox" id="endSoundSwitch"
+                            class="mdl-switch__input"
+                    >
+                    <span class="mdl-switch__label">
+                        Play end sound
+                    </span>
                 </label>
             </p>
 
             <p>
                 <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="tickSoundSwitch">
-                    <input v-model="settings.isTickSoundOn" type="checkbox" id="tickSoundSwitch"
-                           class="mdl-switch__input">
-                    <span class="mdl-switch__label">Play ticking sound</span>
+                    <input
+                            v-model="localSettings['isTickSoundOn']"
+                            type="checkbox" id="tickSoundSwitch"
+                            class="mdl-switch__input"
+                    >
+                    <span class="mdl-switch__label">
+                        Play ticking sound
+                    </span>
                 </label>
             </p>
         </div>
 
         <div class="mdl-card__actions mdl-card--border">
-            <a class="mdl-button mdl-js-button mdl-js-ripple-effect" @click="factorySettings">
+            <a class="mdl-button mdl-js-button mdl-js-ripple-effect" @click="$emit('reset-settings')">
                 Reset to default
             </a>
         </div>

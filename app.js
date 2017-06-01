@@ -2,6 +2,12 @@
 // Common  
 //
 
+/***
+ * Raises window notification
+ * @param body
+ * @param title
+ * @param icon
+ */
 function notify(body, title, icon) {
   var options = {
     body: body,
@@ -11,6 +17,10 @@ function notify(body, title, icon) {
 }
 
 
+/***
+ * Converts from seconds to human string
+ * @param seconds
+ */
 function humanizeSeconds(seconds) {
   if (seconds != 0 && !seconds) {
     return "?"
@@ -39,7 +49,7 @@ var TimerCard = Vue.component('timer-card', {
   props: {
     fortune: String,
     remainingSeconds: Number,
-    sessionMinutes: Number,
+    sessionMinutes: String,
     settings: Object,
   },
   computed: {
@@ -49,10 +59,10 @@ var TimerCard = Vue.component('timer-card', {
   },
 
   methods: {
-    showAbout: function() {
+    showAbout: function () {
       this.$emit('show-about')
     },
-    showSettings: function() {
+    showSettings: function () {
       this.$emit('show-settings')
     },
     startTimer: function () {
@@ -75,7 +85,7 @@ var TimerCard = Vue.component('timer-card', {
     // TODO Put in mixin
     humanizeSeconds: humanizeSeconds,
   },
-  mounted: function() {
+  mounted: function () {
     componentHandler.upgradeDom()
   }
 })
@@ -86,44 +96,46 @@ var TimerCard = Vue.component('timer-card', {
  */
 var SettingsCard = Vue.component('settings-card', {
   template: '#settingsCardTemplate',
+
+  model: {
+    prop: 'settings',
+    event: 'change'
+  },
+
   props: {
     settings: Object,
     num: String,
   },
-  data: function () {
-    return {
-      defaultSettings: {
-        sessionMinutes: 25,
-        shortBreakMinutes: 0.1,
-        longBreakMinutes: 15,
-        isEndSoundOn: true,
-        isTickSoundOn: false,
-      }
-    }
-  },
-  methods: {
-    cancel: function () {
-      this.$emit('cancel')
+
+  computed: {
+    localSettings: {
+      get: function () {
+        return this.settings
+      },
+      set: function (object) {
+        this.$emit('change', object)
+      },
     },
-    goBack: function() {
+  },
+
+  methods: {
+
+    goBack: function () {
       this.$emit('back')
     },
-    factorySettings: function() {
-      this.settings = this.defaultSettings
-    },
-    save: function () {
-      this.$emit('save')
-    },
+
   },
-  mounted: function() {
-    componentHandler.upgradeDom()
-  }
+
+  // mounted: function () {
+  //   componentHandler.upgradeDom()
+  // }
 })
 
 
 var routes = {
   '/': TimerCard,
-  '/settings': SettingsCard
+  '/settings': SettingsCard,
+  // '/about': AboutCard,
 }
 
 /**
@@ -137,7 +149,7 @@ var vue = new Vue({
   //
 
   data: function () {
-    return {
+    data = {
       activeView: 'timer',  // timer, settings
 
       fortunes: [
@@ -145,10 +157,10 @@ var vue = new Vue({
         "You definitely intend to start living sometime soon.",
         "Your business will assume vast proportions.",
       ],
-      settings: {
-        sessionMinutes: 25,
-        shortBreakMinutes: 0.1,
-        longBreakMinutes: 15,
+      defaultSettings: {
+        sessionMinutes: '25',
+        shortBreakMinutes: '5',
+        longBreakMinutes: '15',
         isEndSoundOn: true,
         isTickSoundOn: false,
       },
@@ -162,22 +174,15 @@ var vue = new Vue({
       now: new Date(),
       remainingSeconds: null,
     }
+    data.settings = Object.assign({}, data.defaultSettings)
+    return data
   },
+
   computed: {
     randomFortune: function () {
       var randomIndex = Math.floor(Math.random() * this.fortunes.length)
       return this.fortunes[randomIndex]
     },
-
-    // remainingSeconds: function() {
-    //     if(!this.liveSession) {
-    //         return 0
-    //     }
-    //     var now = new Date()
-    //     var diff = (now - this.liveSession.startDate) / 1000  // seconds
-    //     var remaining = Math.min((this.liveSession.minutes * 60) - diff, 0)
-    //     return remaining
-    // }
   },
 
   //
@@ -185,10 +190,21 @@ var vue = new Vue({
   //
 
   methods: {
-    exitSettings: function() {
+    exitSettings: function () {
+      this.activeView = 'timer'
     },
+
     minuteTick: function () {
     },
+
+    resetSettings: function () {
+      this.settings = Object.assign({}, this.defaultSettings)
+    },
+
+    updateSettings: function (newSettings) {
+      console.log(newSettings)
+    },
+
     secondTick: function () {
       // remaining sessions
       var now = new Date()
@@ -203,9 +219,9 @@ var vue = new Vue({
       }
     },
 
-    //
-    // Asks for permission to send notifications
-    //
+    /***
+     * Asks for permission to send notifications
+     */
     setUpNotifications: function () {
       // Not all browsers support notifications
       if ('Notification' in window) {
@@ -224,15 +240,19 @@ var vue = new Vue({
       }
     },
 
-    showAbout: function() {
-      this.activeView = 'about'
-    },
+    // TODO Implement
+    // showAbout: function() {
+    //   this.activeView = 'about'
+    // },
 
-    showSettings: function() {
+    /***
+     * Switches to settings page
+     */
+    showSettings: function () {
       this.activeView = 'settings'
     },
 
-    showTimer: function() {
+    showTimer: function () {
       this.activeView = 'timer'
     },
 
@@ -261,6 +281,7 @@ var vue = new Vue({
         this.tickHowl.play()
       }
     },
+
     timerFinished: function () {
       this.stopTimer()
       notify("Your timer has ended.", "Time is up!")
@@ -271,21 +292,29 @@ var vue = new Vue({
         sound.play()
       }
     },
+
     stopTimer: function () {
       clearInterval(this.secondTimerId)
       this.secondTimerId = null
       this.remainingSeconds = null
       this.liveSession = null
       document.title = APP_TITLE
-      if(this.tickHowl) {
+      if (this.tickHowl) {
         this.tickHowl.stop()
       }
     },
+
     startShortBreak: function () {
       this.startTimer(this.settings.shortBreakMinutes)
     },
+
     startLongBreak: function () {
       this.startTimer(this.settings.longBreakMinutes)
+    },
+
+    updateSettings: function (newSettings) {
+      // TODO Implement
+      console.log('update settings ---', newSettings)
     },
 
   },

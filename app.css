@@ -1,8 +1,7 @@
-/*@import url('https://fonts.googleapis.com/css?family=Montserrat');*/
+@import url('https://fonts.googleapis.com/css?family=Roboto');
 
 body {
-  background: url('https://source.unsplash.com/random') #cccccc;
-  /*background: #d24d57;*/
+  background: url('https://source.unsplash.com/random') #d24d57;
   background-size: cover;
   font-family: 'Roboto' !important;
   z-index: -1;
@@ -10,6 +9,15 @@ body {
 
 .mdl-grid {
   margin-top: 5%;
+}
+
+.mdl-layout-title {
+  text-shadow: 1px 0px 3px #000;
+}
+
+.mdl-layout-title a {
+  text-decoration: none;
+  color: inherit;
 }
 
 .mdl-card {
@@ -83,3 +91,4 @@ body {
   left: 0;
   top: 1em;
 }
+
